@@ -1,7 +1,7 @@
 const express= require('express')
 var cors = require('cors')
-const dbConnection = require('./db')
-const datahandler =require('./routes/datahandler')
+const DB = require('./db')
+const todo =require('./routes/todo')
 const auth =require('./routes/auth')
 const app = express()
 var bodyParser = require('body-parser');
@@ -9,15 +9,20 @@ var bodyParser = require('body-parser');
 app.use(bodyParser());
 app.use(cors()); // To avoid cross domain access
 
-app.use('/input', datahandler);
-app.use('/login',auth);
+app.use('/todo', todo);
+app.use('/auth',auth);
 
 const port = 3001
-dbConnection.initDB((err,db) =>{
-    if(err){
-        console.log(err);
+const dB = new DB();
+
+(async () => {
+    try {
+        const db = await dB.initDB();
+        app.set("db",db);
+        console.log('connected')
+        app.listen(port)
+    } catch(e) {
+        console.log('db failed', e);
     }
-    else{
-        app.listen(port, () => console.log(`App listening at http://localhost:${port}`))
-    }
-});
+})();
+
